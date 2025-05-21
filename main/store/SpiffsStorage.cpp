@@ -7,12 +7,13 @@
 #include <esp_spiffs.h>
 
 const char* SpiffsStorage::TAG = "SpiffsStorage";
+const char* LABEL = "spiffs";
 
 bool SpiffsStorage::begin() {
     ESP_LOGI(TAG, "Initializing SPIFFS");
     esp_vfs_spiffs_conf_t conf = {
         .base_path = "/spiffs",
-        .partition_label = NULL,
+        .partition_label = LABEL,
         .max_files = 5,
         .format_if_mount_failed = true
       };
@@ -39,13 +40,13 @@ bool SpiffsStorage::begin() {
 
 bool SpiffsStorage::end() {
     ESP_LOGI(TAG, "Unmounting SPIFFS...");
-    esp_vfs_spiffs_unregister(NULL);
+    esp_vfs_spiffs_unregister(LABEL);
     ESP_LOGI(TAG, "SPIFFS unmounted.");
     return true;
 }
 
 bool SpiffsStorage::writeFile(const std::string& path, const std::string& data) {
-    std::string full_path = "/spiffs/" + path;
+    std::string full_path = "/spiffs" + path;
     ESP_LOGI(TAG, "Writing file: %s", full_path.c_str());
 
     FILE* f = fopen(full_path.c_str(), "w");
@@ -65,7 +66,7 @@ bool SpiffsStorage::writeFile(const std::string& path, const std::string& data) 
 }
 
 std::string SpiffsStorage::readFile(const std::string& path) {
-    std::string full_path = "/spiffs/" + path;
+    std::string full_path = "/spiffs" + path;
     ESP_LOGI(TAG, "Reading file: %s", full_path.c_str());
 
     FILE* f = fopen(full_path.c_str(), "r");
@@ -76,14 +77,16 @@ std::string SpiffsStorage::readFile(const std::string& path) {
 
     fseek(f, 0, SEEK_END);
     long fsize = ftell(f);
+
+    ESP_LOGI(TAG, "File size: %ld bytes", fsize);
     fseek(f, 0, SEEK_SET);
 
     std::string data;
     data.reserve(fsize); // Pre-allocate memory
 
-    char c;
+    int c;
     while ((c = fgetc(f)) != EOF) {
-        data += c;
+        data += static_cast<char>(c);
     }
 
     fclose(f);
@@ -92,7 +95,7 @@ std::string SpiffsStorage::readFile(const std::string& path) {
 }
 
 bool SpiffsStorage::appendFile(const std::string& path, const std::string& data) {
-    std::string full_path = "/spiffs/" + path;
+    std::string full_path = "/spiffs" + path;
     ESP_LOGI(TAG, "Appending to file: %s", full_path.c_str());
 
     FILE* f = fopen(full_path.c_str(), "a");
@@ -112,7 +115,7 @@ bool SpiffsStorage::appendFile(const std::string& path, const std::string& data)
 }
 
 bool SpiffsStorage::deleteFile(const std::string& path) {
-    std::string full_path = "/spiffs/" + path;
+    std::string full_path = "/spiffs" + path;
     ESP_LOGI(TAG, "Deleting file: %s", full_path.c_str());
 
     if (remove(full_path.c_str()) != 0) {
@@ -124,7 +127,7 @@ bool SpiffsStorage::deleteFile(const std::string& path) {
 }
 
 bool SpiffsStorage::fileExists(const std::string& path) {
-    std::string full_path = "/spiffs/" + path;
+    std::string full_path = "/spiffs" + path;
     ESP_LOGI(TAG, "Checking if file exists: %s", full_path.c_str());
 
     FILE* f = fopen(full_path.c_str(), "r");

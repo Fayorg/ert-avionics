@@ -1,7 +1,7 @@
 #include <esp_log.h>
 #include <FlightState.h>
 #include <NVSStore.h>
-#include <SDCardStorage.h>
+#include <SpiffsStorage.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
@@ -18,20 +18,15 @@ extern "C" void app_main(void)
 
     vTaskDelay(pdMS_TO_TICKS(1000));
 
-    // Testing the SDCard reader
-    SDCardStorage sdCardStorage;
-    if (!sdCardStorage.begin()) {
-        ESP_LOGE("SDCardStorage", "Failed to initialize SD card");
+    // Testing the SPIFFS Storage
+    SpiffsStorage spiffsStorage;
+    if (!spiffsStorage.begin()) {
+        ESP_LOGE("SPIFFS", "Failed to initialize SPIFFS");
         return;
     }
 
-    sdCardStorage.writeFile("/test.txt", "Hello, SD Card!");
-    std::string data = sdCardStorage.readFile("/test.txt");
-    if (!data.empty()) {
-        ESP_LOGI("SDCardStorage", "Read from SD card: %s", data.c_str());
-    } else {
-        ESP_LOGE("SDCardStorage", "Failed to read from SD card");
-    }
+    spiffsStorage.writeFile("/test.txt", "Hello SPIFFS!");
+    ESP_LOGI("MAIN-SPIFFS", "Read from SPIFFS: %s", spiffsStorage.readFile("/test.txt").c_str());
 
-    sdCardStorage.end();
+    spiffsStorage.end();
 }
