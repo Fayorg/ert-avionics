@@ -1,6 +1,7 @@
 #include <esp_log.h>
 #include <FlightState.h>
 #include <NVSStore.h>
+#include <SDCardStorage.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
@@ -17,9 +18,20 @@ extern "C" void app_main(void)
 
     vTaskDelay(pdMS_TO_TICKS(1000));
 
-    flightState->setState(FlightState::READY);
-    ESP_LOGI("Flight state", "Current state: %d", flightState->getState());
+    // Testing the SDCard reader
+    SDCardStorage sdCardStorage;
+    if (!sdCardStorage.begin()) {
+        ESP_LOGE("SDCardStorage", "Failed to initialize SD card");
+        return;
+    }
 
-    vTaskDelay(pdMS_TO_TICKS(2000));
-    flightState->setState(FlightState::LANDED);
+    sdCardStorage.writeFile("/test.txt", "Hello, SD Card!");
+    std::string data = sdCardStorage.readFile("/test.txt");
+    if (!data.empty()) {
+        ESP_LOGI("SDCardStorage", "Read from SD card: %s", data.c_str());
+    } else {
+        ESP_LOGE("SDCardStorage", "Failed to read from SD card");
+    }
+
+    sdCardStorage.end();
 }

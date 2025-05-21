@@ -6,6 +6,7 @@ idf_component_register(
 
             "store/NVSStore.cpp"
             "store/SpiffsStorage.cpp"
+            "store/SDCardStorage.cpp"
 
         INCLUDE_DIRS
             "."
@@ -17,4 +18,7 @@ idf_component_register(
             freertos
             nvs_flash
             spiffs
+            fatfs
+            sdmmc
+            spi_flash
 )

@@ -6,10 +6,10 @@
 #include <esp_log.h>
 #include <esp_spiffs.h>
 
-const char* SpiffsStorage::TAG = "FlightState";
+const char* SpiffsStorage::TAG = "SpiffsStorage";
 
 bool SpiffsStorage::begin() {
-    ESP_LOGI("Initializing SPIFFS");
+    ESP_LOGI(TAG, "Initializing SPIFFS");
     esp_vfs_spiffs_conf_t conf = {
         .base_path = "/spiffs",
         .partition_label = NULL,
