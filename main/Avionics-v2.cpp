@@ -1,3 +1,5 @@
+#include <CommandPing.h>
+#include <CommandRegistry.h>
 #include <esp_log.h>
 #include <FlightState.h>
 #include <NVSStore.h>
@@ -6,6 +8,7 @@
 #include <SpiffsStorage.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#include <UartProcess.h>
 
 static FlightState* flightState = nullptr;
 
@@ -17,6 +20,18 @@ extern "C" void app_main(void)
         while(1) { vTaskDelay(pdMS_TO_TICKS(1000)); }
     }
     flightState = new FlightState();
+
+    // Setting up the commands
+    ESP_LOGI("Avionics-Init", "Setting up command registry & init uart");
+    UartProcess::init_uart();
+
+    CommandRegistry::getInstance().registerCommand(std::make_shared<CommandPing>());
+
+    ESP_LOGI("Avionics-Init", "Creating task");
+    auto status = xTaskCreate(UartProcess::wait_for_uart_command, "uart_cmd_task", 4096, NULL, 5, NULL);
+    if (status != pdPASS) {
+        ESP_LOGE("Avionics-Init", "Failed to create UART command task");
+    }
 
     vTaskDelay(pdMS_TO_TICKS(1000));
 

@@ -9,10 +9,15 @@ idf_component_register(
             "store/SDCardStorage.cpp"
             "store/RedundantStorageManager.cpp"
 
+            "commands/CommandRegistry.cpp"
+            "commands/CommandPing.cpp"
+            "commands/UartProcess.cpp"
+
         INCLUDE_DIRS
             "."
             "state"
             "store"
+            "commands"
 
         REQUIRES
             driver
