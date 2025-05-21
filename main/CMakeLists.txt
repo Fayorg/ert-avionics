@@ -7,6 +7,7 @@ idf_component_register(
             "store/NVSStore.cpp"
             "store/SpiffsStorage.cpp"
             "store/SDCardStorage.cpp"
+            "store/RedundantStorageManager.cpp"
 
         INCLUDE_DIRS
             "."

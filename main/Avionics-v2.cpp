@@ -1,6 +1,8 @@
 #include <esp_log.h>
 #include <FlightState.h>
 #include <NVSStore.h>
+#include <RedundantStorageManager.h>
+#include <SDCardStorage.h>
 #include <SpiffsStorage.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -18,15 +20,21 @@ extern "C" void app_main(void)
 
     vTaskDelay(pdMS_TO_TICKS(1000));
 
-    // Testing the SPIFFS Storage
+    // Testing Redundant Storage
     SpiffsStorage spiffsStorage;
-    if (!spiffsStorage.begin()) {
-        ESP_LOGE("SPIFFS", "Failed to initialize SPIFFS");
-        return;
+    SDCardStorage sdCardStorage;
+    RedundantStorageManager storageManager(&spiffsStorage, &sdCardStorage);
+
+    storageManager.begin();
+
+    if(!storageManager.appendToLog("/test.log", "Hello World Redundancy!")) {
+        ESP_LOGE("Avionics-Init", "Failed to append to log");
     }
 
-    spiffsStorage.writeFile("/test.txt", "Hello SPIFFS!");
-    ESP_LOGI("MAIN-SPIFFS", "Read from SPIFFS: %s", spiffsStorage.readFile("/test.txt").c_str());
-
-    spiffsStorage.end();
+    auto raw = storageManager.readFromFile("/test.log");
+    if (raw.empty()) {
+        ESP_LOGE("Avionics-Init", "Failed to read from file");
+    } else {
+        ESP_LOGI("Avionics-Init", "Read from file: %s", raw.c_str());
+    }
 }
