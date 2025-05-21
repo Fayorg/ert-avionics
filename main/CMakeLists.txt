@@ -5,6 +5,7 @@ idf_component_register(
             "state/FlightState.cpp"
 
             "store/NVSStore.cpp"
+            "store/SpiffsStorage.cpp"
 
         INCLUDE_DIRS
             "."
@@ -15,4 +16,5 @@ idf_component_register(
             driver
             freertos
             nvs_flash
+            spiffs
 )
