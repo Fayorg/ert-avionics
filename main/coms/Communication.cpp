@@ -12,6 +12,11 @@
 
 const char* Communication::TAG = "Communication";
 
+Communication& Communication::getInstance() {
+    static Communication instance;
+    return instance;
+}
+
 bool Communication::init() {
     ESP_LOGI(TAG, "Initializing communication...");
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();

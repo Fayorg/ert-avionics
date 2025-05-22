@@ -14,12 +14,11 @@ FlightState& FlightState::getInstance() {
     return instance;
 }
 
-void FlightState::initFlightState(): store("flight_state") {
-    if (!getInstance().refreshState()) {
-        getInstance().current_state = INIT;
+FlightState::FlightState() : store("flight_state") {
+    if (!refreshState()) {
+        current_state = INIT;
     }
 }
-
 
 FlightState::State FlightState::getState() const {
     return this->current_state;

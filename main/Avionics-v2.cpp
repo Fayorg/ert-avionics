@@ -10,9 +10,10 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <UartProcess.h>
-#include "coms/PacketAssembler.h"
 
-static FlightState* flightState = nullptr;
+#include <TaskRegistry.h>
+
+#include "TestTask.h"
 
 extern "C" void app_main(void)
 {
@@ -21,7 +22,8 @@ extern "C" void app_main(void)
         ESP_LOGE("Avionics-Init", "Failed to initialize NVS flash. Aborting.");
         while(1) { vTaskDelay(pdMS_TO_TICKS(1000)); }
     }
-    FlightState::initFlightState();
+
+    ESP_LOGI("Avionics-Init", "Flight State is %u", FlightState::getInstance().getState());
 
     // COMS Initialization
     ESP_LOGI("Avionics-Init", "Initializing communication...");
@@ -30,9 +32,10 @@ extern "C" void app_main(void)
         while(1) { vTaskDelay(pdMS_TO_TICKS(1000)); }
     }
 
-    // Heartbeat Task
-    ESP_LOGI("Avionics-Init", "Creating heartbeat task");
-    // auto status = xTaskCreate(Communication::getInstance().send_packet(PacketAssembler::create_heartbeat_packet), "heartbeat_task", 4096, NULL, 5, NULL);
+    // Init TaskRegistry
+    ESP_LOGI("Avionics-Init", "Initializing task registry...");
+    TaskRegistry::getInstance().initTasks();
+    TaskRegistry::getInstance().registerTask(std::make_shared<TestTask>());
 
     // Setting up the commands
     ESP_LOGI("Avionics-Init", "Setting up command registry & init uart");

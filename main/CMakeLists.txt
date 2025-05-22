@@ -16,8 +16,8 @@ idf_component_register(
             "coms/Communication.cpp"
             "coms/PacketAssembler.cpp"
 
-            "tasks/HeartbeatTask.cpp"
             "tasks/TaskRegistry.cpp"
+            "tasks/TestTask.cpp"
 
         INCLUDE_DIRS
             "."

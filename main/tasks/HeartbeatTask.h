@@ -12,14 +12,14 @@ public:
     HeartbeatTask() = default;
     ~HeartbeatTask() override = default;
 
-    void run() override;
+    void run(void* args) override;
     void init() override;
 
     UBaseType_t get_priority() const override {
         return 5;
     }
 
-    std::vector<FlightState> shouldRunDuring() override {
+    std::vector<FlightState::State> shouldRunDuring() override {
         return {FlightState::READY, FlightState::INIT};
     }
 };

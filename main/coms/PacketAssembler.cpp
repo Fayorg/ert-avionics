@@ -13,7 +13,7 @@ esp_now_telemetry_packet_t PacketAssembler::create_telemetry_packet() {
         .reserved = 0
     };
 
-
+    return {};
 }
 
 esp_now_heartbeat_packet_t PacketAssembler::create_heartbeat_packet() {

@@ -18,8 +18,6 @@ class FlightState {
         };
         static FlightState& getInstance();
 
-        static void initFlightState();
-
         bool setState(State new_state);
         State getState() const;
 
@@ -27,7 +25,7 @@ class FlightState {
         bool refreshState();
 
     private:
-        FlightState() = default;
+        FlightState();
         FlightState(const FlightState&) = delete;
         FlightState& operator=(const FlightState&) = delete;
 
