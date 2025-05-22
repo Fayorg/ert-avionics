@@ -10,7 +10,6 @@
 class HeartbeatTask : public Task {
 public:
     HeartbeatTask() = default;
-    ~HeartbeatTask() override = default;
 
     void run(void* args) override;
     void init() override;
@@ -20,8 +19,10 @@ public:
     }
 
     std::vector<FlightState::State> shouldRunDuring() override {
-        return {FlightState::READY, FlightState::INIT};
+        return {};
     }
+
+    std::string getName() const override;
 };
 
 
