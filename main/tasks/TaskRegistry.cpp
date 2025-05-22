@@ -23,7 +23,7 @@ void TaskRegistry::initTasks() {
 
         if (taskShouldRun(FlightState::getInstance().getState(), task)) {
             TaskHandle_t taskHandle;
-            if (auto status = xTaskCreate(task->taskRunner, task->getName().c_str(), 4096, nullptr, 5, &taskHandle); status != pdPASS) {
+            if (auto status = xTaskCreate(Task::taskRunner, task->getName().c_str(), 4096, task.get(), task->get_priority(), &taskHandle); status != pdPASS) {
                 ESP_LOGE("TaskRegistry", "Failed to create task: %s", task->getName().c_str());
             } else {
                 runningTasks[task] = taskHandle;
@@ -39,7 +39,7 @@ void TaskRegistry::onStateChange(FlightState::State oldState, FlightState::State
             auto it = runningTasks.find(task);
             if (it == runningTasks.end()) {
                 TaskHandle_t taskHandle;
-                auto status = xTaskCreate(task->taskRunner, task->getName().c_str(), 4096, nullptr, 5, &taskHandle);
+                auto status = xTaskCreate(Task::taskRunner, task->getName().c_str(), 4096, task.get(), task->get_priority(), &taskHandle);
 
                 if (status != pdPASS) {
                     ESP_LOGE("TaskRegistry", "Failed to create task: %s", task->getName().c_str());

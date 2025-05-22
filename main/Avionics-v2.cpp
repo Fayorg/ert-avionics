@@ -32,11 +32,6 @@ extern "C" void app_main(void)
         while(1) { vTaskDelay(pdMS_TO_TICKS(1000)); }
     }
 
-    // Init TaskRegistry
-    ESP_LOGI("Avionics-Init", "Initializing task registry...");
-    TaskRegistry::getInstance().initTasks();
-    TaskRegistry::getInstance().registerTask(std::make_shared<TestTask>());
-
     // Setting up the commands
     ESP_LOGI("Avionics-Init", "Setting up command registry & init uart");
     UartProcess::init_uart();
@@ -49,6 +44,12 @@ extern "C" void app_main(void)
     if (status != pdPASS) {
         ESP_LOGE("Avionics-Init", "Failed to create UART command task");
     }
+
+    // Init TaskRegistry
+    ESP_LOGI("Avionics-Init", "Initializing task registry...");
+    TaskRegistry::getInstance().registerTask(std::make_shared<TestTask>());
+
+    TaskRegistry::getInstance().initTasks();
 
     vTaskDelay(pdMS_TO_TICKS(1000));
 
