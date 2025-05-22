@@ -10,6 +10,7 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <UartProcess.h>
+#include "coms/PacketAssembler.h"
 
 static FlightState* flightState = nullptr;
 
@@ -20,14 +21,18 @@ extern "C" void app_main(void)
         ESP_LOGE("Avionics-Init", "Failed to initialize NVS flash. Aborting.");
         while(1) { vTaskDelay(pdMS_TO_TICKS(1000)); }
     }
-    flightState = new FlightState();
+    FlightState::initFlightState();
 
     // COMS Initialization
     ESP_LOGI("Avionics-Init", "Initializing communication...");
-    if (!Communication::init()) {
+    if (!Communication::getInstance().init()) {
         ESP_LOGE("Avionics-Init", "Failed to initialize communication. Aborting.");
         while(1) { vTaskDelay(pdMS_TO_TICKS(1000)); }
     }
+
+    // Heartbeat Task
+    ESP_LOGI("Avionics-Init", "Creating heartbeat task");
+    // auto status = xTaskCreate(Communication::getInstance().send_packet(PacketAssembler::create_heartbeat_packet), "heartbeat_task", 4096, NULL, 5, NULL);
 
     // Setting up the commands
     ESP_LOGI("Avionics-Init", "Setting up command registry & init uart");
@@ -37,6 +42,7 @@ extern "C" void app_main(void)
 
     ESP_LOGI("Avionics-Init", "Creating UART command task");
     auto status = xTaskCreate(UartProcess::wait_for_uart_command, "uart_cmd_task", 4096, NULL, 5, NULL);
+
     if (status != pdPASS) {
         ESP_LOGE("Avionics-Init", "Failed to create UART command task");
     }

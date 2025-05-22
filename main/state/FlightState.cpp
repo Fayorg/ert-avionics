@@ -5,28 +5,38 @@
 #include "FlightState.h"
 
 #include <esp_log.h>
+#include <TaskRegistry.h>
 
 const char* FlightState::TAG = "FlightState";
 
-FlightState::FlightState(): store("flight_state") {
-    // Get state from NVS otherwise set to INIT
-    if (!this->refreshState()) {
-        this->current_state = INIT;
+FlightState& FlightState::getInstance() {
+    static FlightState instance;
+    return instance;
+}
+
+void FlightState::initFlightState(): store("flight_state") {
+    if (!getInstance().refreshState()) {
+        getInstance().current_state = INIT;
     }
 }
+
 
 FlightState::State FlightState::getState() const {
     return this->current_state;
 }
 
 bool FlightState::setState(State new_state) {
-    ESP_LOGI("Changing state to ", "%d", new_state);
+    auto old_state = this->current_state;
+    ESP_LOGI(TAG, "Changing state from %d to %d", old_state, new_state);
 
     if (this->store.setInt("state", new_state) != ESP_OK) {
         ESP_LOGE(TAG, "Failed to set state in NVS");
         return false;
     }
     this->current_state = new_state;
+
+    ESP_LOGI(TAG, "Calling onChangeState callback to TaskRegistry");
+    TaskRegistry::getInstance().onStateChange(old_state, new_state);
 
     return true;
 }

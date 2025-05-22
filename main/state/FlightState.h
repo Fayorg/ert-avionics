@@ -4,6 +4,7 @@
 
 #ifndef FLIGHTSTATE_H
 #define FLIGHTSTATE_H
+
 #include <NVSStore.h>
 
 class FlightState {
@@ -15,16 +16,21 @@ class FlightState {
             GLIDING = 3,
             LANDED = 4
         };
+        static FlightState& getInstance();
 
-        FlightState();
+        static void initFlightState();
 
         bool setState(State new_state);
-        [[nodiscard]] State getState() const;
+        State getState() const;
 
         // Refresh state from memory in case of unexpected shutdown
         bool refreshState();
 
     private:
+        FlightState() = default;
+        FlightState(const FlightState&) = delete;
+        FlightState& operator=(const FlightState&) = delete;
+
         State current_state;
         NVSStore store;
 

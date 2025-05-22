@@ -14,6 +14,10 @@ idf_component_register(
             "commands/UartProcess.cpp"
 
             "coms/Communication.cpp"
+            "coms/PacketAssembler.cpp"
+
+            "tasks/HeartbeatTask.cpp"
+            "tasks/TaskRegistry.cpp"
 
         INCLUDE_DIRS
             "."
@@ -21,6 +25,7 @@ idf_component_register(
             "store"
             "commands"
             "coms"
+            "tasks"
 
         REQUIRES
             driver
