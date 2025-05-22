@@ -3,7 +3,9 @@
 
 #include "Communication.h"
 
+#include <cstring>
 #include <esp_log.h>
+#include <esp_now.h>
 #include <esp_wifi.h>
 #include <nvs_flash.h>
 #include <rom/ets_sys.h>
@@ -53,9 +55,21 @@ bool Communication::init() {
     if (esp_wifi_get_mac(WIFI_IF_STA, mac) != ESP_OK) {
         ESP_LOGE(TAG, "Failed to get MAC address");
         return false;
-    } else {
-        ESP_LOGI(TAG, "STA MAC: %02x:%02x:%02x:%02x:%02x:%02x", MAC2STR(mac));
+    }
+    memcpy(mac_addr, mac, sizeof(mac_addr));
+
+    ESP_LOGI(TAG, "Je ne comprends pas ca ne fait pas le sens... WASSSSSS! Was ist das shit? %02x:%02x:%02x:%02x:%02x:%02x", MAC2STR(mac));
+    ESP_LOGI(TAG, "STA MAC: %02x:%02x:%02x:%02x:%02x:%02x", MAC2STR(mac));
+
+    return true;
+}
+
+bool Communication::send_packet(esp_now_generic_packet_t packet) {
+    if (esp_now_send(mac_addr, reinterpret_cast<uint8_t *>(&packet), sizeof(packet)) != ESP_OK) {
+        ESP_LOGW(TAG, "Failed to send packet");
+        return false;
     }
 
     return true;
 }
+

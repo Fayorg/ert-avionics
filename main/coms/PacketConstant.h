@@ -62,6 +62,10 @@ typedef struct __attribute__((packed)) { // total: 39bytes i thjink which sould 
     bool parachute_unreefed;
 } esp_now_telemetry_payload_t;
 
+typedef struct __attribute__((packed)) {
+    uint8_t  flight_state;
+} esp_now_heartbeat_payload_t;
+
 // +69+ PACKET DEFINITION +69+ (im to tired for thi shi)
 typedef struct __attribute__((packed)) {
     esp_now_packet_header_t header;
@@ -86,5 +90,11 @@ typedef struct __attribute__((packed)) {
     esp_now_telemetry_payload_t telemetry_payload;
     uint16_t                crc;
 } esp_now_telemetry_packet_t;
+
+typedef struct __attribute__((packed)) {
+    esp_now_packet_header_t header;
+    esp_now_heartbeat_payload_t   heartbeat_payload;
+    uint16_t                crc;
+} esp_now_heartbeat_packet_t;
 
 #endif //PACKETCONSTANT_H
