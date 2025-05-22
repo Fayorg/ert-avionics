@@ -18,6 +18,7 @@ idf_component_register(
 
             "tasks/TaskRegistry.cpp"
             "tasks/TestTask.cpp"
+            "tasks/HeartbeatTask.cpp"
 
         INCLUDE_DIRS
             "."

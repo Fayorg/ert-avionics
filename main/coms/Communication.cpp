@@ -69,6 +69,50 @@ bool Communication::init() {
     return true;
 }
 
+bool Communication::init_peer_info(const uint8_t *peer_mac_addr) {
+    ESP_LOGI(TAG, "Initializing communication peer (%02x:%02x:%02x:%02x:%02x:%02x)", MAC2STR(peer_mac_addr));
+    esp_now_peer_info_t peer = {
+        .peer_addr = *peer_mac_addr,
+        .channel = WIFI_CHANNEL,
+        .ifidx = WIFI_IF_STA,
+        .encrypt = false
+    };
+
+    if(esp_now_add_peer(&peer) != ESP_OK) {
+        ESP_LOGE(TAG, "Peer init failed");
+        return false;
+    }
+    ESP_LOGI(TAG, "Peer has been established");
+    return true;
+}
+
+void Communication::on_packet_received(const esp_now_recv_info_t *info, const uint8_t *data, int len) {
+    if (info == nullptr || data == nullptr || len == 0) {
+        ESP_LOGW(TAG, "Invalid packet received");
+        return;
+    }
+
+    // Print the packet
+    ESP_LOGI(TAG, "Received packet from %02x:%02x:%02x:%02x:%02x:%02x", MAC2STR(info->src_addr));
+    ESP_LOGI(TAG, "Packet length: %d", len);
+    ESP_LOGI(TAG, "Packet data: ");
+    for (int i = 0; i < len; ++i) {
+        ESP_LOGI(TAG, "%02x ", data[i]);
+    }
+    ESP_LOGI(TAG, "\n");
+}
+
+bool Communication::register_receive_callback() {
+    if (esp_now_register_recv_cb(on_packet_received) != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to register receive callback");
+        return false;
+    }
+    ESP_LOGI(TAG, "Receive callback registered");
+    return true;
+}
+
+
+
 bool Communication::send_packet(esp_now_generic_packet_t packet) {
     if (esp_now_send(mac_addr, reinterpret_cast<uint8_t *>(&packet), sizeof(packet)) != ESP_OK) {
         ESP_LOGW(TAG, "Failed to send packet");
@@ -77,4 +121,5 @@ bool Communication::send_packet(esp_now_generic_packet_t packet) {
 
     return true;
 }
+
 

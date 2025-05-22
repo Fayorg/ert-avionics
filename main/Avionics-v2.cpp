@@ -12,18 +12,21 @@
 #include <UartProcess.h>
 
 #include <TaskRegistry.h>
+#include <config/AddressConfig.h>
 
-#include "TestTask.h"
+#include "HeartbeatTask.h"
 
-extern "C" void app_main(void)
-{
+#define IS_GROUND_STATION;
+
+extern "C" void app_main(void) {
     // NVS & Flight State Initialization
     if (NVSStore::initNVSFlash() != ESP_OK) {
         ESP_LOGE("Avionics-Init", "Failed to initialize NVS flash. Aborting.");
         while(1) { vTaskDelay(pdMS_TO_TICKS(1000)); }
     }
-
-    ESP_LOGI("Avionics-Init", "Flight State is %u", FlightState::getInstance().getState());
+    #ifdef not IS_GROUND_STATION
+        ESP_LOGI("Avionics-Init", "Flight State is %u", FlightState::getInstance().getState());
+    #endif
 
     // COMS Initialization
     ESP_LOGI("Avionics-Init", "Initializing communication...");
@@ -31,6 +34,30 @@ extern "C" void app_main(void)
         ESP_LOGE("Avionics-Init", "Failed to initialize communication. Aborting.");
         while(1) { vTaskDelay(pdMS_TO_TICKS(1000)); }
     }
+
+    #ifdef IS_GROUND_STATION
+        ESP_LOGI("Avionics-Init", "Initializing peer info for ground station...");
+        auto res = Communication::getInstance().init_peer_info(AVIONICS_MAC_ADDRESS_INT);
+        if (!Communication::getInstance().register_receive_callback()) {
+            ESP_LOGE("Avionics-Init", "Failed to register receive callback");
+        }
+    #else
+        ESP_LOGI("Avionics-Init", "Initializing peer info for avionics...");
+        auto res = Communication::getInstance().init_peer_info(GROUND_STATION_MAC_ADDRESS_INT);
+    #endif
+
+    if (res) {
+        ESP_LOGW("Avionics-Init", "Failed to initialize peer info.");
+    }
+    ESP_LOGI("Avionics-Init", "Communication initialized successfully.");
+
+    // Init TaskRegistry
+    ESP_LOGI("Avionics-Init", "Initializing task registry...");
+    // TaskRegistry::getInstance().registerTask(std::make_shared<TestTask>());
+    #ifdef not IS_GROUND_STATION
+        TaskRegistry::getInstance().registerTask(std::make_shared<HeartbeatTask>());
+    #endif
+    TaskRegistry::getInstance().initTasks();
 
     // Setting up the commands
     ESP_LOGI("Avionics-Init", "Setting up command registry & init uart");
@@ -44,12 +71,6 @@ extern "C" void app_main(void)
     if (status != pdPASS) {
         ESP_LOGE("Avionics-Init", "Failed to create UART command task");
     }
-
-    // Init TaskRegistry
-    ESP_LOGI("Avionics-Init", "Initializing task registry...");
-    TaskRegistry::getInstance().registerTask(std::make_shared<TestTask>());
-
-    TaskRegistry::getInstance().initTasks();
 
     vTaskDelay(pdMS_TO_TICKS(1000));
 
