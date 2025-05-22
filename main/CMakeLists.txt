@@ -13,11 +13,14 @@ idf_component_register(
             "commands/CommandPing.cpp"
             "commands/UartProcess.cpp"
 
+            "coms/Communication.cpp"
+
         INCLUDE_DIRS
             "."
             "state"
             "store"
             "commands"
+            "coms"
 
         REQUIRES
             driver
@@ -27,4 +30,5 @@ idf_component_register(
             fatfs
             sdmmc
             spi_flash
+            esp_wifi
 )
