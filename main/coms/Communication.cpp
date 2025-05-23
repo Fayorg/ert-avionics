@@ -120,6 +120,12 @@ void Communication::on_packet_received(const esp_now_recv_info_t *info, const ui
             break;
         case PACKET_TYPE_TELEMETRY:
             ESP_LOGI(TAG, "Received telemetry packet");
+
+            // get the telemetry data
+            esp_now_telemetry_packet_t telemetry_packet;
+            memcpy(&telemetry_packet, data, sizeof(telemetry_packet));
+
+            ESP_LOGI(TAG, "PITCH: %.2f | YAW: %.2f | ROLL: %.2f", telemetry_packet.telemetry_payload.pitch, telemetry_packet.telemetry_payload.yaw, telemetry_packet.telemetry_payload.roll);
             break;
         default:
             ESP_LOGW(TAG, "Unknown packet type");

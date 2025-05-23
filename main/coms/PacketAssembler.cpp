@@ -5,15 +5,14 @@
 
 #include <Communication.h>
 
-esp_now_telemetry_packet_t PacketAssembler::create_telemetry_packet() {
-    esp_now_packet_header_t header = {
-        .packet_type = PACKET_TYPE_TELEMETRY,
-        .sequence_num = 0, // TODO
-        .sender_mac = *Communication::getInstance().get_mac_addr(),
-        .reserved = 0
-    };
+esp_now_telemetry_packet_t PacketAssembler::create_telemetry_packet(esp_now_telemetry_payload_t payload) {
+    auto header = create_packet_header(PACKET_TYPE_TELEMETRY);
 
-    return {};
+    return {
+        .header = header,
+        .telemetry_payload = payload,
+        .crc = 0 // TODO: Calculate CRC
+    };
 }
 
 esp_now_heartbeat_packet_t PacketAssembler::create_heartbeat_packet() {

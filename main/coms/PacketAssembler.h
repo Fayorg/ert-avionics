@@ -7,7 +7,7 @@
 
 class PacketAssembler {
     public:
-        static esp_now_telemetry_packet_t create_telemetry_packet();
+        static esp_now_telemetry_packet_t create_telemetry_packet(esp_now_telemetry_payload_t payload);
 
         static esp_now_heartbeat_packet_t create_heartbeat_packet();
 

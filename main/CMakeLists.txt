@@ -19,6 +19,16 @@ idf_component_register(
             "tasks/TaskRegistry.cpp"
             "tasks/TestTask.cpp"
             "tasks/HeartbeatTask.cpp"
+            "tasks/TelemetryTask.cpp"
+
+            "sensors/Sensor.cpp"
+            "sensors/MPU6050.cpp"
+            "sensors/BMP280.cpp"
+            "sensors/HMC5883L.cpp"
+
+            "filters/MadgwickAHRS.cpp"
+
+            "utils/Tools.cpp"
 
         INCLUDE_DIRS
             "."
@@ -27,6 +37,9 @@ idf_component_register(
             "commands"
             "coms"
             "tasks"
+            "sensors"
+            "filters"
+            "utils"
 
         REQUIRES
             driver
@@ -37,6 +50,11 @@ idf_component_register(
             sdmmc
             spi_flash
             esp_wifi
+            bmp280
+            mpu6050
+            qmc5883l
+            i2cdev
+            esp_idf_lib_helpers
 )
 
 option(IS_GROUND_STATION_BUILD "Build for Ground Station (defines IS_GROUND_STATION=1)" OFF)

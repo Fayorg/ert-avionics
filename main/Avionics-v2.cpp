@@ -15,6 +15,7 @@
 #include <config/AddressConfig.h>
 
 #include "HeartbeatTask.h"
+#include <tasks/TelemetryTask.h>
 
 extern "C" void app_main(void) {
     // NVS & Flight State Initialization
@@ -25,6 +26,14 @@ extern "C" void app_main(void) {
     #ifndef IS_GROUND_STATION
         ESP_LOGI("Avionics-Init", "Flight State is %u", FlightState::getInstance().getState());
     #endif
+
+    // Init I2C
+    ESP_LOGI("Avionics-Init", "Initializing I2C...");
+    if (i2cdev_init() != ESP_OK) {
+        ESP_LOGE("Avionics-Init", "Failed to initialize I2C. Aborting.");
+        while(1) { vTaskDelay(pdMS_TO_TICKS(1000)); }
+    }
+    ESP_LOGI("Avionics-Init", "I2C initialized successfully.");
 
     // COMS Initialization
     ESP_LOGI("Avionics-Init", "Initializing communication...");
@@ -54,6 +63,7 @@ extern "C" void app_main(void) {
     // TaskRegistry::getInstance().registerTask(std::make_shared<TestTask>());
     #ifndef IS_GROUND_STATION
         TaskRegistry::getInstance().registerTask(std::make_shared<HeartbeatTask>());
+        TaskRegistry::getInstance().registerTask(std::make_shared<TelemetryTask>());
     #endif
     TaskRegistry::getInstance().initTasks();
 
@@ -71,6 +81,8 @@ extern "C" void app_main(void) {
     }
 
     vTaskDelay(pdMS_TO_TICKS(1000));
+
+    FlightState::getInstance().setState(FlightState::READY);
 
     // Testing Redundant Storage
     SpiffsStorage spiffsStorage;
