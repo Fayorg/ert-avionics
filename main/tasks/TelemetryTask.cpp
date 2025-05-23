@@ -28,6 +28,16 @@ void TelemetryTask::run(void *args) {
     while (true) {
         esp_now_telemetry_payload_t telemetry_payload;
 
+        if (!bmp.read()) {
+            ESP_LOGE("TelemetryTask", "Failed to read BMP280");
+        }
+        if (!mpu.read()) {
+            ESP_LOGE("TelemetryTask", "Failed to read MPU6050");
+        }
+        if (!hmc.read()) {
+            ESP_LOGE("TelemetryTask", "Failed to read HMC5883L");
+        }
+
         telemetry_payload.pressure_hpa = bmp.get_pressure();
         telemetry_payload.temperature_c = bmp.get_temperature();
         telemetry_payload.altitude_m = bmp.get_altitude();

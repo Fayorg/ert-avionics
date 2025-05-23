@@ -15,6 +15,7 @@ idf_component_register(
 
             "coms/Communication.cpp"
             "coms/PacketAssembler.cpp"
+            "coms/PacketToJson.cpp"
 
             "tasks/TaskRegistry.cpp"
             "tasks/TestTask.cpp"
@@ -55,6 +56,7 @@ idf_component_register(
             qmc5883l
             i2cdev
             esp_idf_lib_helpers
+            arduinojson
 )
 
 option(IS_GROUND_STATION_BUILD "Build for Ground Station (defines IS_GROUND_STATION=1)" OFF)

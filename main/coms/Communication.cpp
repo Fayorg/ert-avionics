@@ -10,6 +10,8 @@
 #include <nvs_flash.h>
 #include <rom/ets_sys.h>
 
+#include "PacketToJson.h"
+
 const char* Communication::TAG = "Communication";
 
 Communication& Communication::getInstance() {
@@ -116,22 +118,23 @@ void Communication::on_packet_received(const esp_now_recv_info_t *info, const ui
             ESP_LOGI(TAG, "Received ACK packet");
             break;
         case PACKET_TYPE_HEARTBEAT:
-            ESP_LOGI(TAG, "Received telemetry packet");
+            ESP_LOGI(TAG, "Received heartbeat packet");
             break;
-        case PACKET_TYPE_TELEMETRY:
+        case PACKET_TYPE_TELEMETRY: {
             ESP_LOGI(TAG, "Received telemetry packet");
 
             // get the telemetry data
             esp_now_telemetry_packet_t telemetry_packet;
             memcpy(&telemetry_packet, data, sizeof(telemetry_packet));
 
-            ESP_LOGI(TAG, "PITCH: %.2f | YAW: %.2f | ROLL: %.2f", telemetry_packet.telemetry_payload.pitch, telemetry_packet.telemetry_payload.yaw, telemetry_packet.telemetry_payload.roll);
+            auto json = PacketToJson::convertTelemetryPacket(telemetry_packet);
+            printf("*%s\n", json.c_str());
             break;
+        }
         default:
             ESP_LOGW(TAG, "Unknown packet type");
             break;
     }
-
 }
 
 bool Communication::register_receive_callback() {
