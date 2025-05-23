@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import * as THREE from 'three';
+import CenteredLineChart from './components/CenteredLineChart';
 // import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
 const App = () => {
@@ -128,6 +129,20 @@ const App = () => {
     };
   }, [orientation]);
 
+  const [data, setData] = useState([]);
+  useEffect(() => {
+    setInterval(() => {
+        const { roll, pitch, yaw } = GenerateFakeOrientationData();
+        setData(prevData => {
+            const newData = [...prevData, { x: Date.now(), y: roll }];
+            if (newData.length > 20) {
+                newData.shift(); // remove the oldest data point
+            }
+            return newData;
+        });
+    }, 200);
+  }, []);
+
   return (
     <div className="w-screen h-screen flex flex-row">
       {/* canv for Threej */}
@@ -135,12 +150,30 @@ const App = () => {
             <canvas ref={canvasRef} className="w-full h-full"></canvas>
         </div>
         <div className='w-full h-full'>
-            <div className='border-1 border-white rounded-2xl p-2'>
+            <div className='p-2'>
                 <h1>Telemetry</h1>
+                <div className='flex flex-col h-80 gap-2'>
+                <div className='h-1/3'>
+                <CenteredLineChart data={data} title='row'/>
+                </div>
+                <div className='h-1/3'>
+                <CenteredLineChart data={data} title='pitch'/>
+                </div>
+                <div className='h-1/3'>
+                <CenteredLineChart data={data} title='yaw'/>
+                </div>
+                </div>
             </div>
         </div>
     </div>
   );
 };
+
+function GenerateFakeOrientationData() {
+    const roll = (Math.random() - 0.5) * Math.PI * 2; // Random roll between -PI and PI
+    const pitch = (Math.random() - 0.5) * Math.PI / 2; // Random pitch between -PI/4 and PI/4
+    const yaw = (Math.random() - 0.5) * Math.PI * 2; // Random yaw between -PI and PI
+    return { roll, pitch, yaw };
+}
 
 export default App;
