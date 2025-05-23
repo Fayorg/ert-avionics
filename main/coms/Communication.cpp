@@ -56,6 +56,11 @@ bool Communication::init() {
         return false;
     }
 
+    if (esp_now_init() != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to init ESP-NOW");
+        return false;
+    }
+
     uint8_t mac[6];
     if (esp_wifi_get_mac(WIFI_IF_STA, mac) != ESP_OK) {
         ESP_LOGE(TAG, "Failed to get MAC address");
@@ -64,19 +69,20 @@ bool Communication::init() {
     memcpy(mac_addr, mac, sizeof(mac_addr));
 
     ESP_LOGI(TAG, "Je ne comprends pas ca ne fait pas le sens... WASSSSSS! Was ist das shit? %02x:%02x:%02x:%02x:%02x:%02x", MAC2STR(mac));
-    ESP_LOGI(TAG, "STA MAC: %02x:%02x:%02x:%02x:%02x:%02x", MAC2STR(mac));
+    ESP_LOGI(TAG, "STA MAC: %02x:%02x:%02x:%02x:%02x:%02x", MAC2STR(mac_addr));
 
     return true;
 }
 
 bool Communication::init_peer_info(const uint8_t *peer_mac_addr) {
     ESP_LOGI(TAG, "Initializing communication peer (%02x:%02x:%02x:%02x:%02x:%02x)", MAC2STR(peer_mac_addr));
+    memcpy(peer, peer_mac_addr, sizeof(peer));
     esp_now_peer_info_t peer = {
-        .peer_addr = *peer_mac_addr,
         .channel = WIFI_CHANNEL,
         .ifidx = WIFI_IF_STA,
         .encrypt = false
     };
+    memcpy(peer.peer_addr, peer_mac_addr, ESP_NOW_ETH_ALEN);
 
     if(esp_now_add_peer(&peer) != ESP_OK) {
         ESP_LOGE(TAG, "Peer init failed");
@@ -92,14 +98,34 @@ void Communication::on_packet_received(const esp_now_recv_info_t *info, const ui
         return;
     }
 
-    // Print the packet
-    ESP_LOGI(TAG, "Received packet from %02x:%02x:%02x:%02x:%02x:%02x", MAC2STR(info->src_addr));
-    ESP_LOGI(TAG, "Packet length: %d", len);
-    ESP_LOGI(TAG, "Packet data: ");
-    for (int i = 0; i < len; ++i) {
-        ESP_LOGI(TAG, "%02x ", data[i]);
+    if (len != sizeof(esp_now_generic_packet_t)) {
+        ESP_LOGW(TAG, "Invalid packet size");
+        return;
     }
-    ESP_LOGI(TAG, "\n");
+
+    // Copy the received data into a generic packet
+    esp_now_generic_packet_t packet;
+    memcpy(&packet, data, sizeof(len));
+
+    // Cast packet to the ciorrec type
+    switch (packet.header.packet_type) {
+        case PACKET_TYPE_COMMAND:
+            ESP_LOGI(TAG, "Received command packet");
+            break;
+        case PACKET_TYPE_ACK:
+            ESP_LOGI(TAG, "Received ACK packet");
+            break;
+        case PACKET_TYPE_HEARTBEAT:
+            ESP_LOGI(TAG, "Received telemetry packet");
+            break;
+        case PACKET_TYPE_TELEMETRY:
+            ESP_LOGI(TAG, "Received telemetry packet");
+            break;
+        default:
+            ESP_LOGW(TAG, "Unknown packet type");
+            break;
+    }
+
 }
 
 bool Communication::register_receive_callback() {
@@ -114,7 +140,7 @@ bool Communication::register_receive_callback() {
 
 
 bool Communication::send_packet(esp_now_generic_packet_t packet) {
-    if (esp_now_send(mac_addr, reinterpret_cast<uint8_t *>(&packet), sizeof(packet)) != ESP_OK) {
+    if (esp_now_send(peer, reinterpret_cast<uint8_t *>(&packet), sizeof(packet)) != ESP_OK) {
         ESP_LOGW(TAG, "Failed to send packet");
         return false;
     }

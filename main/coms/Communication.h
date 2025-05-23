@@ -61,6 +61,7 @@ class Communication {
     private:
         static const char* TAG;
         uint8_t mac_addr[6];
+        uint8_t peer[6];
         uint8_t sequence_num = 0;
 
         Communication() = default;
