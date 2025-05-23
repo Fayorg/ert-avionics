@@ -16,15 +16,13 @@
 
 #include "HeartbeatTask.h"
 
-#define IS_GROUND_STATION;
-
 extern "C" void app_main(void) {
     // NVS & Flight State Initialization
     if (NVSStore::initNVSFlash() != ESP_OK) {
         ESP_LOGE("Avionics-Init", "Failed to initialize NVS flash. Aborting.");
         while(1) { vTaskDelay(pdMS_TO_TICKS(1000)); }
     }
-    #ifdef not IS_GROUND_STATION
+    #ifndef IS_GROUND_STATION
         ESP_LOGI("Avionics-Init", "Flight State is %u", FlightState::getInstance().getState());
     #endif
 
@@ -46,7 +44,7 @@ extern "C" void app_main(void) {
         auto res = Communication::getInstance().init_peer_info(GROUND_STATION_MAC_ADDRESS_INT);
     #endif
 
-    if (res) {
+    if (res != ESP_OK) {
         ESP_LOGW("Avionics-Init", "Failed to initialize peer info.");
     }
     ESP_LOGI("Avionics-Init", "Communication initialized successfully.");
@@ -54,7 +52,7 @@ extern "C" void app_main(void) {
     // Init TaskRegistry
     ESP_LOGI("Avionics-Init", "Initializing task registry...");
     // TaskRegistry::getInstance().registerTask(std::make_shared<TestTask>());
-    #ifdef not IS_GROUND_STATION
+    #ifndef IS_GROUND_STATION
         TaskRegistry::getInstance().registerTask(std::make_shared<HeartbeatTask>());
     #endif
     TaskRegistry::getInstance().initTasks();

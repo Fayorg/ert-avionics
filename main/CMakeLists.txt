@@ -38,3 +38,12 @@ idf_component_register(
             spi_flash
             esp_wifi
 )
+
+option(IS_GROUND_STATION_BUILD "Build for Ground Station (defines IS_GROUND_STATION=1)" OFF)
+
+if(IS_GROUND_STATION_BUILD)
+    message(STATUS "Building for Ground Station")
+    add_compile_definitions(IS_GROUND_STATION=1)
+else()
+    message(STATUS "Building for Avionics")
+endif()
