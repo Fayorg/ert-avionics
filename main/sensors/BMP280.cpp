@@ -148,7 +148,7 @@ void calculate_max_altitude_reached(const float altitude, const float max_altitu
         altitude_sum = altitude_sum/4;
         baro_c = 0;
         double vertical_velocity = (altitude_sum - altitude_sum_previous)/((1./SAMPLE_FREQ) * 4); //to get time in seconds and not ms
-        ESP_LOGI(TAG, "Velocity: %f | Altitude: %f  | Altitude_sum: %f",vertical_velocity, altitude,altitude_sum );
+        // ESP_LOGI(TAG, "Velocity: %f | Altitude: %f  | Altitude_sum: %f",vertical_velocity, altitude,altitude_sum );
         altitude_sum_previous = altitude_sum;
         altitude_sum = 0;
 

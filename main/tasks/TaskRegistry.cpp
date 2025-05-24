@@ -5,6 +5,9 @@
 
 #include <esp_log.h>
 #include <sstream>
+#include <freertos/FreeRTOSConfig.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
 
 // This is giving me Java vibes :/
 TaskRegistry& TaskRegistry::getInstance() {
@@ -26,7 +29,7 @@ void TaskRegistry::initTasks() {
             if (auto status = xTaskCreate(Task::taskRunner, task->getName().c_str(), 4096, task.get(), task->get_priority(), &taskHandle); status != pdPASS) {
                 ESP_LOGE("TaskRegistry", "Failed to create task: %s", task->getName().c_str());
             } else {
-                runningTasks[task] = taskHandle;
+                runningTasks[task] = std::make_shared<TaskHandle_t>(taskHandle);
                 ESP_LOGI("TaskRegistry", "Created task: %s", task->getName().c_str());
             }
         }
@@ -44,16 +47,18 @@ void TaskRegistry::onStateChange(FlightState::State oldState, FlightState::State
                 if (status != pdPASS) {
                     ESP_LOGE("TaskRegistry", "Failed to create task: %s", task->getName().c_str());
                 } else {
-                    runningTasks[task] = taskHandle;
+                    runningTasks[task] = std::make_shared<TaskHandle_t>(taskHandle);
                     ESP_LOGI("TaskRegistry", "Created task: %s", task->getName().c_str());
                 }
             }
         } else {
             auto it = runningTasks.find(task);
             if (it != runningTasks.end()) {
-                vTaskDelete(it->second);
+                vTaskDelete(*it->second);
                 runningTasks.erase(it);
                 ESP_LOGI("TaskRegistry", "Deleted task: %s", task->getName().c_str());
+            } else {
+                ESP_LOGI("TaskRegistry", "Task %s is not running", task->getName().c_str());
             }
         }
     }
@@ -65,5 +70,8 @@ bool TaskRegistry::taskShouldRun(const FlightState::State current_state, const s
         return true;
     }
 
-    return task->shouldRunDuring().empty() || std::find(task->shouldRunDuring().begin(), task->shouldRunDuring().end(), current_state) != task->shouldRunDuring().end();
+    auto states = task->shouldRunDuring();
+    auto it = std::find(states.begin(), states.end(), current_state);
+
+    return it != states.end();
 }

@@ -25,3 +25,15 @@ std::string PacketToJson::convertTelemetryPacket(esp_now_telemetry_packet_t pack
     return json_output;
 }
 
+std::string PacketToJson::convertHeartbeatPacket(esp_now_heartbeat_packet_t packet) {
+    StaticJsonDocument<sizeof(esp_now_heartbeat_payload_t) + sizeof(packet.header.packet_type)> document;
+    document["packet_type"] = packet.header.packet_type;
+
+    JsonObject data_obj = document.createNestedObject("payload");
+    data_obj["status"] = packet.heartbeat_payload.flight_state;
+
+    std::string json_output;
+    serializeJson(document, json_output);
+    return json_output;
+}
+

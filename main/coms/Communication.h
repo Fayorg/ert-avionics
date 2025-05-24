@@ -44,17 +44,6 @@ class Communication {
             const uint8_t* specific_payload_ptr = reinterpret_cast<const uint8_t*>(&packet) + sizeof(esp_now_packet_header_t);
             std::memcpy(generic_packet.payload, specific_payload_ptr, payload_size_bytes);
 
-            // Log the size of both packets to compare
-            size_t payload_size = payload_size_bytes;
-            ESP_LOGI(TAG, "Original payload size: %zu", payload_size);
-            ESP_LOGI(TAG, "Generic payload size: %zu", sizeof(generic_packet.payload));
-
-            if (std::memcmp(generic_packet.payload, specific_payload_ptr, payload_size) == 0) {
-                ESP_LOGI(TAG, "Payloads are identical");
-            } else {
-                ESP_LOGW(TAG, "Payloads differ");
-            }
-
             return send_packet(generic_packet);
         }
 

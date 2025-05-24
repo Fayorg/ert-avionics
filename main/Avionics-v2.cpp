@@ -17,6 +17,11 @@
 #include "HeartbeatTask.h"
 #include <tasks/TelemetryTask.h>
 
+#include "CommandState.h"
+#include "CommandTasks.h"
+#include "DetectTakeoffTask.h"
+#include "TestTask.h"
+
 extern "C" void app_main(void) {
     // NVS & Flight State Initialization
     if (NVSStore::initNVSFlash() != ESP_OK) {
@@ -51,6 +56,9 @@ extern "C" void app_main(void) {
     #else
         ESP_LOGI("Avionics-Init", "Initializing peer info for avionics...");
         auto res = Communication::getInstance().init_peer_info(GROUND_STATION_MAC_ADDRESS_INT);
+        if (!Communication::getInstance().register_receive_callback()) {
+            ESP_LOGE("Avionics-Init", "Failed to register receive callback");
+        }
     #endif
 
     if (res != ESP_OK) {
@@ -64,6 +72,7 @@ extern "C" void app_main(void) {
     #ifndef IS_GROUND_STATION
         TaskRegistry::getInstance().registerTask(std::make_shared<HeartbeatTask>());
         TaskRegistry::getInstance().registerTask(std::make_shared<TelemetryTask>());
+        TaskRegistry::getInstance().registerTask(std::make_shared<DetectTakeoffTask>());
     #endif
     TaskRegistry::getInstance().initTasks();
 
@@ -72,6 +81,8 @@ extern "C" void app_main(void) {
     UartProcess::init_uart();
 
     CommandRegistry::getInstance().registerCommand(std::make_shared<CommandPing>());
+    CommandRegistry::getInstance().registerCommand(std::make_shared<CommandTasks>());
+    CommandRegistry::getInstance().registerCommand(std::make_shared<CommandState>());
 
     ESP_LOGI("Avionics-Init", "Creating UART command task");
     auto status = xTaskCreate(UartProcess::wait_for_uart_command, "uart_cmd_task", 4096, NULL, 5, NULL);

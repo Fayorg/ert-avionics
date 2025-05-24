@@ -10,6 +10,8 @@
 #include <nvs_flash.h>
 #include <rom/ets_sys.h>
 
+#include "FlightState.h"
+#include "PacketAssembler.h"
 #include "PacketToJson.h"
 
 const char* Communication::TAG = "Communication";
@@ -113,17 +115,46 @@ void Communication::on_packet_received(const esp_now_recv_info_t *info, const ui
     switch (packet.header.packet_type) {
         case PACKET_TYPE_COMMAND:
             ESP_LOGI(TAG, "Received command packet");
+            esp_now_command_packet_t command_packet;
+            memcpy(&command_packet, data, sizeof(command_packet));
+
+            switch (command_packet.command_payload.command_id) {
+                case CMD_SET_STATE: {
+                    uint8_t desired_state = command_packet.command_payload.command_data[0];
+                    ESP_LOGI(TAG, "Received command to set state: %d", desired_state);
+
+                    if (FlightState::getInstance().setState(static_cast<FlightState::State>(desired_state))) {
+                        ESP_LOGI(TAG, "State has been set to %d", desired_state);
+                        Communication::getInstance().send_packet(PacketAssembler::create_ack_packet(ACK_STATUS_SUCCESS, command_packet.header.sequence_num), sizeof(esp_now_ack_payload_t));
+                    } else {
+                        ESP_LOGW(TAG, "Failed to set state to %d", desired_state);
+                        Communication::getInstance().send_packet(PacketAssembler::create_ack_packet(ACK_STATUS_FAILURE, command_packet.header.sequence_num), sizeof(esp_now_ack_payload_t));
+                    }
+                    break;
+                }
+                default:
+                    ESP_LOGW(TAG, "Unknown command ID");
+                    Communication::getInstance().send_packet(PacketAssembler::create_ack_packet(ACK_STATUS_INVALID_CMD, command_packet.header.sequence_num), sizeof(esp_now_ack_payload_t));
+                    break;
+            }
+
             break;
         case PACKET_TYPE_ACK:
             ESP_LOGI(TAG, "Received ACK packet");
             break;
-        case PACKET_TYPE_HEARTBEAT:
+        case PACKET_TYPE_HEARTBEAT: {
             ESP_LOGI(TAG, "Received heartbeat packet");
+
+            esp_now_heartbeat_packet_t heartbeat_packet;
+            memcpy(&heartbeat_packet, data, sizeof(heartbeat_packet));
+
+            auto json = PacketToJson::convertHeartbeatPacket(heartbeat_packet);
+            printf("*%s\n", json.c_str());
             break;
+        }
         case PACKET_TYPE_TELEMETRY: {
             ESP_LOGI(TAG, "Received telemetry packet");
 
-            // get the telemetry data
             esp_now_telemetry_packet_t telemetry_packet;
             memcpy(&telemetry_packet, data, sizeof(telemetry_packet));
 
@@ -149,12 +180,10 @@ bool Communication::register_receive_callback() {
 
 
 bool Communication::send_packet(esp_now_generic_packet_t packet) {
-    if (esp_now_send(peer, reinterpret_cast<uint8_t *>(&packet), sizeof(packet)) != ESP_OK) {
-        ESP_LOGW(TAG, "Failed to send packet");
+    if (auto err = esp_now_send(peer, reinterpret_cast<uint8_t *>(&packet), sizeof(packet)) != ESP_OK) {
+        ESP_LOGW(TAG, "Failed to send packet (%d)", err);
         return false;
     }
 
     return true;
 }
-
-

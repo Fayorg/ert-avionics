@@ -18,8 +18,16 @@ class TaskRegistry {
         void initTasks();
         void onStateChange(FlightState::State oldState, FlightState::State newState);
 
+        std::vector<std::shared_ptr<Task>> getTasks() {
+            return tasks;
+        }
+
+        std::map<std::shared_ptr<Task>, std::shared_ptr<TaskHandle_t>> getRunningTasks() {
+            return runningTasks;
+        }
+
     private:
-        std::map<std::shared_ptr<Task>, TaskHandle_t> runningTasks;
+        std::map<std::shared_ptr<Task>, std::shared_ptr<TaskHandle_t>> runningTasks;
         std::vector<std::shared_ptr<Task>> tasks;
 
         static bool taskShouldRun(FlightState::State current_state, const std::shared_ptr<Task>& task);

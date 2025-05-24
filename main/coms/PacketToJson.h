@@ -11,6 +11,7 @@
 class PacketToJson {
     public:
         static std::string convertTelemetryPacket(esp_now_telemetry_packet_t packet);
+        static std::string convertHeartbeatPacket(esp_now_heartbeat_packet_t packet);
 };
 
 #endif //PACKETTOJSON_H

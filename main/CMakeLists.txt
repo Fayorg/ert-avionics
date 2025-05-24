@@ -12,6 +12,8 @@ idf_component_register(
             "commands/CommandRegistry.cpp"
             "commands/CommandPing.cpp"
             "commands/UartProcess.cpp"
+            "commands/CommandTasks.cpp"
+            "commands/CommandState.cpp"
 
             "coms/Communication.cpp"
             "coms/PacketAssembler.cpp"
@@ -21,6 +23,9 @@ idf_component_register(
             "tasks/TestTask.cpp"
             "tasks/HeartbeatTask.cpp"
             "tasks/TelemetryTask.cpp"
+            "tasks/ForwardUartTask.cpp"
+            "tasks/DetectTakeoffTask.cpp"
+            "tasks/DetectApogeeTask.cpp"
 
             "sensors/Sensor.cpp"
             "sensors/MPU6050.cpp"
@@ -57,6 +62,7 @@ idf_component_register(
             i2cdev
             esp_idf_lib_helpers
             arduinojson
+            esp_timer
 )
 
 option(IS_GROUND_STATION_BUILD "Build for Ground Station (defines IS_GROUND_STATION=1)" OFF)

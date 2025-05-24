@@ -15,7 +15,7 @@ public:
     void init() override;
 
     UBaseType_t get_priority() const override {
-        return 5;
+        return 3;
     }
 
     std::vector<FlightState::State> shouldRunDuring() override {

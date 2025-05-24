@@ -21,8 +21,6 @@ typedef enum {
 // Maybe will work with the CommandRegistry instead
 typedef enum {
   CMD_SET_STATE = 0x01,
-  CMD_ESPCAMERA = 0x02,
-  CMD_REQUEST_TELEMETRY = 0x03,
 } esp_now_command_id_t;
 
 typedef enum {
@@ -45,8 +43,7 @@ typedef struct __attribute__((packed)) {
 } esp_now_command_payload_t;
 
 typedef struct __attribute__((packed)) {
-    uint8_t  ack_status;       // esp_now_ack_status_t
-    uint8_t  acked_packet_type;
+    esp_now_ack_status_t  ack_status;       // esp_now_ack_status_t
     uint8_t  acked_sequence_num; // Sequence
 } esp_now_ack_payload_t;
 

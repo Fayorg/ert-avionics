@@ -7,6 +7,7 @@
 #include "esp_log.h"
 #include "PacketAssembler.h"
 #include "PacketConstant.h"
+#include "Tools.h"
 
 void TelemetryTask::init() {
     ESP_LOGI("TelemetryTask", "Initializing TelemetryTask");
@@ -25,6 +26,7 @@ void TelemetryTask::init() {
 }
 
 void TelemetryTask::run(void *args) {
+    int count = 0;
     while (true) {
         esp_now_telemetry_payload_t telemetry_payload;
 
@@ -42,16 +44,16 @@ void TelemetryTask::run(void *args) {
         telemetry_payload.temperature_c = bmp.get_temperature();
         telemetry_payload.altitude_m = bmp.get_altitude();
 
-        telemetry_payload.accel_x = mpu.get_accel_x();
-        telemetry_payload.accel_y = mpu.get_accel_y();
-        telemetry_payload.accel_z = mpu.get_accel_z();
-
+        float ax = mpu.get_accel_x(), ay = mpu.get_accel_y(), az = mpu.get_accel_z();
         float gx = mpu.get_gyro_x(), gy = mpu.get_gyro_y(), gz = mpu.get_gyro_z();
         float mx = hmc.get_mag_x(), my = hmc.get_mag_y(), mz = hmc.get_mag_z();
 
-        hmc.display();
-
         // TODO: Switch axis if needed
+        Tools::switchAxis(ax, ay, az); Tools::switchAxis(gx, gy, gz); Tools::switchAxis(mx, my, mz);
+
+        telemetry_payload.accel_x = ax;
+        telemetry_payload.accel_y = ay;
+        telemetry_payload.accel_z = az;
 
         ahrs.update(gx, gy,  gz, telemetry_payload.accel_x, telemetry_payload.accel_y, telemetry_payload.accel_z, mx, my, mz);
 
@@ -63,14 +65,17 @@ void TelemetryTask::run(void *args) {
         telemetry_payload.parachute_unreefed = false;
         telemetry_payload.gliding = false;
 
-        Communication::getInstance().send_packet(PacketAssembler::create_telemetry_packet(telemetry_payload), sizeof(telemetry_payload));
+        if (count % 4 == 0) {
+            Communication::getInstance().send_packet(PacketAssembler::create_telemetry_packet(telemetry_payload), sizeof(telemetry_payload));
+        }
+        count++;
 
         vTaskDelay(pdMS_TO_TICKS(1000/20));
     }
 }
 
 UBaseType_t TelemetryTask::get_priority() const {
-    return 5;
+    return 2;
 }
 
 std::string TelemetryTask::getName() const {
@@ -78,7 +83,7 @@ std::string TelemetryTask::getName() const {
 }
 
 std::vector<FlightState::State> TelemetryTask::shouldRunDuring() {
-    return {FlightState::READY,
+    return {FlightState::ARMED,
             FlightState::IN_FLIGHT,
             FlightState::GLIDING,
             FlightState::LANDED};

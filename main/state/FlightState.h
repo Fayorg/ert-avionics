@@ -12,9 +12,10 @@ class FlightState {
         enum State {
             INIT = 0,
             READY = 1,
-            IN_FLIGHT = 2,
-            GLIDING = 3,
-            LANDED = 4
+            ARMED = 2,
+            IN_FLIGHT = 3,
+            GLIDING = 4,
+            LANDED = 5
         };
         static FlightState& getInstance();
 
