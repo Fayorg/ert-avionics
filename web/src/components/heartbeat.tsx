@@ -53,6 +53,8 @@ export function Heartbeat({ heartbeat }: { heartbeat: { timestamp: number; statu
 			case 4:
 				return 'GLIDING';
 			case 5:
+				return 'UNREEFED';
+			case 6:
 				return 'LANDED';
 			default:
 				return 'UNKNOWN';

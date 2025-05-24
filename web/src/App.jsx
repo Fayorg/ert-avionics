@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { Heartbeat } from './components/heartbeat';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'; // Corrected import path
 import StateButton from './components/state-button';
+import CenteredLineChart from './components/CenteredLineChart';
 
 const App = () => {
   const canvasRef = useRef(null);
@@ -16,7 +17,7 @@ const App = () => {
     pivot: null,
   });
 
-  const [orientation, setOrientation] = useState({ roll: 0, pitch: 0, yaw: 0 });
+  const [orientation, setOrientation] = useState({ roll: 0, pitch: 0, yaw: 0, altitude: 0, pressure: 0, temperature: 0, ax: 0, ay: 0, az: 0 });
   const [heartbeat, setHeartbeat] = useState({ status: -1, timestamp: 0 });
 
   const CANVAS_WIDTH = 512;
@@ -166,6 +167,12 @@ const App = () => {
                 roll: json.payload.roll * Math.PI / 180,
                 pitch: json.payload.pitch * Math.PI / 180,
                 yaw: json.payload.yaw * Math.PI / 180,
+                altitude: json.payload.altitude,
+                pressure: json.payload.pressure,
+                temperature: json.payload.temperature,
+                ax: json.payload.ax,
+                ay: json.payload.ay,
+                az: json.payload.az
             });
             break;
           default:
@@ -191,27 +198,54 @@ const App = () => {
             <div style={{ width: CANVAS_WIDTH, height: '100vh' }} className='relative'>
                 <Heartbeat heartbeat={heartbeat} />
                 <canvas ref={canvasRef} className="w-full h-full"></canvas>
-                <div className='absolute top-0 right-0'>
+                <div className='absolute top-2 right-2 flex flex-col items-end'>
                     <p>Pitch: {(orientation.pitch * 180 / Math.PI).toFixed(2)}°</p>
                     <p>Roll: {(orientation.roll * 180 / Math.PI).toFixed(2)}°</p>
                     <p>Yaw: {(orientation.yaw * 180 / Math.PI).toFixed(2)}°</p>
+
+                    <p>Altitude: {orientation.altitude}m</p>
+                    <p>Pressure: {orientation.pressure}hPa</p>
+                    <p>Temperature: {orientation.temperature}°C</p>
                 </div>
             </div>
-            <div className='w-full h-full pl-2'>
+            <div className='w-full h-full pl-2 pr-2'>
                 <div className='flex flex-col w-full'>
                     <h2 className='text-2xl'>State</h2>
                     <div className='flex flex-row'>
                         <StateButton state={0} title={"INIT"} currentState={heartbeat.status} onClick={() => {ws.current.send("state 0")}} />
                         <StateButton state={1} title={"READY"} currentState={heartbeat.status} onClick={() => {ws.current.send("state 1")}} />
                         <StateButton state={2} title={"ARMED"} currentState={heartbeat.status} onClick={() => {ws.current.send("state 2")}} />
-                        <StateButton state={3} title={"IN_FLIGHT"} currentState={heartbeat.status} />
-                        <StateButton state={4} title={"GLIDING"} currentState={heartbeat.status} />
-                        <StateButton state={5} title={"LANDED"} currentState={heartbeat.status} />
+                        <StateButton state={3} title={"IN_FLIGHT"} currentState={heartbeat.status} onClick={() => {ws.current.send("state 3")}} />
+                        <StateButton state={4} title={"GLIDING"} currentState={heartbeat.status} onClick={() => {ws.current.send("state 4")}} />
+                        <StateButton state={5} title={"UNREEFED"} currentState={heartbeat.status} onClick={() => {ws.current.send("state 5")}} />
+                        <StateButton state={6} title={"LANDED"} currentState={heartbeat.status} onClick={() => {ws.current.send("state 6")}} />
+                    </div>
+                </div>
+                <div className='flex flex-col w-full'>
+                    <h2 className='text-2xl'>Manual</h2>
+                    <div className='flex flex-row'>
+                        <StateButton state={3} title={"EMATCH"} currentState={heartbeat.status} onClick={() => {ws.current.send("ema")}} />
+                        <StateButton state={4} title={"RS GND"} currentState={heartbeat.status} onClick={() => {ws.current.send("rs gnd")}} />
+                        <StateButton state={4} title={"RS AVI"} currentState={heartbeat.status} onClick={() => {ws.current.send("rs gnd")}} />
                     </div>
                 </div>
                 <div className=''>
                     <h2 className='text-2xl'>Altitude</h2>
-                    
+
+                </div>
+                <div>
+                    <h2 className='text-2xl'>Acceleration</h2>
+                    <div className='flex flex-col gap-2'>
+                        <div className='h-24 w-full'>
+                            <CenteredLineChart title='ax' data={[]} />
+                        </div>
+                        <div className='h-24 w-full'>
+                            <CenteredLineChart title='ay' data={[]} />
+                        </div>
+                        <div className='h-24 w-full'>
+                            <CenteredLineChart title='az' data={[]} />
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
