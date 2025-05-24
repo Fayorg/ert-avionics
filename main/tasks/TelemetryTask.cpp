@@ -7,6 +7,7 @@
 #include "esp_log.h"
 #include "PacketAssembler.h"
 #include "PacketConstant.h"
+#include "RedundantStorageManager.h"
 #include "Tools.h"
 
 void TelemetryTask::init() {
@@ -19,6 +20,8 @@ void TelemetryTask::init() {
     ESP_LOGI("TelemetryTask", "Calibration started");
     hmc.calibrate();
     ESP_LOGI("TelemetryTask", "Calibration finished");
+
+    RedundantStorageManager::getInstance().appendCsvData("/flight.csv", "========= INIT ========");
 }
 
 void TelemetryTask::run(void *args) {
@@ -65,6 +68,17 @@ void TelemetryTask::run(void *args) {
             Communication::getInstance().send_packet(PacketAssembler::create_telemetry_packet(telemetry_payload), sizeof(telemetry_payload));
         }
         count++;
+
+        RedundantStorageManager::getInstance().appendCsvData("/flight.csv",
+            std::to_string(telemetry_payload.pressure_hpa) + "," +
+            std::to_string(telemetry_payload.temperature_c) + "," +
+            std::to_string(telemetry_payload.altitude_m) + "," +
+            std::to_string(telemetry_payload.accel_x) + "," +
+            std::to_string(telemetry_payload.accel_y) + "," +
+            std::to_string(telemetry_payload.accel_z) + "," +
+            std::to_string(telemetry_payload.pitch) + "," +
+            std::to_string(telemetry_payload.roll) + "," +
+            std::to_string(telemetry_payload.yaw));
 
         vTaskDelay(pdMS_TO_TICKS(1000/20));
     }

@@ -7,9 +7,12 @@
 
 
 class RedundantStorageManager {
-    public:
-        RedundantStorageManager(Storage* primary, Storage* secondary) : primaryStorage(primary), secondaryStorage(secondary), primaryReady(false), secondaryReady(false) {}
+    public:¨
+        static RedundantStorageManager& getInstance();
+        //RedundantStorageManager(Storage* primary, Storage* secondary) : primaryStorage(primary), secondaryStorage(secondary), primaryReady(false), secondaryReady(false) {}
 
+        void init(Storage* primary, Storage* secondary);
+        //void init(Storage* primary, Storage* secondary, bool primaryReady, bool secondaryReady
         void begin();
         void end();
         bool appendToLog(const string& filename, const string& logEntry);
@@ -20,10 +23,15 @@ class RedundantStorageManager {
 
     private:
         static const char* TAG;
+
+        RedundantStorageManager() = default;
+        RedundantStorageManager(const RedundantStorageManager&) = delete;
+        RedundantStorageManager& operator=(const RedundantStorageManager&) = delete;
+
         Storage* primaryStorage;
         Storage* secondaryStorage;
-        bool primaryReady;
-        bool secondaryReady;
+        bool primaryReady = false;
+        bool secondaryReady = false;
 };
 
 

@@ -21,7 +21,8 @@ typedef enum {
 // Maybe will work with the CommandRegistry instead
 typedef enum {
   CMD_SET_STATE = 0x01,
-    CMD_EMA = 0x02
+    CMD_EMA = 0x02,
+    CMD_RS = 0x03,
 } esp_now_command_id_t;
 
 typedef enum {

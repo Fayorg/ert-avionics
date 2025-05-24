@@ -135,9 +135,20 @@ void Communication::on_packet_received(const esp_now_recv_info_t *info, const ui
                 }
 
                 case CMD_EMA: {
+                    ESP_LOGI(TAG, "Received command to emergency EMATCH");
                     gpio_set_level(GPIO_NUM_4, 1);
                     vTaskDelay(pdMS_TO_TICKS(5000));
                     gpio_set_level(GPIO_NUM_4, 0);
+                }
+
+                case CMD_RS: {
+                    uint8_t desired_state = command_packet.command_payload.command_data[0];
+                    if (desired_state == 1) {
+                        // TODO: reset storage
+                    } else {
+                        ESP_LOGI(TAG, "Received command to reset state");
+                        esp_restart();
+                    }
                 }
                 default:
                     ESP_LOGW(TAG, "Unknown command ID");

@@ -24,6 +24,10 @@
 #include "DetectTakeoffTask.h"
 #include "UnreefedTask.h"
 
+/*static RedundantStorageManager* manager = nullptr;
+static SDCardStorage* sdCardStorage = nullptr;
+static SpiffsStorage* spiffsStorage = nullptr;*/
+
 extern "C" void app_main(void) {
     gpio_set_direction(GPIO_NUM_4, GPIO_MODE_OUTPUT);
 
@@ -43,6 +47,12 @@ extern "C" void app_main(void) {
         while(1) { vTaskDelay(pdMS_TO_TICKS(1000)); }
     }
     ESP_LOGI("Avionics-Init", "I2C initialized successfully.");
+
+    // Testing Redundant Storage
+    ESP_LOGI("Avionics-Init", "Initializing redundant storage...");
+    SpiffsStorage spiffsStorage;
+    SDCardStorage sdCardStorage;
+    RedundantStorageManager::getInstance().init(&spiffsStorage, &sdCardStorage);
 
     // COMS Initialization
     ESP_LOGI("Avionics-Init", "Initializing communication...");
@@ -110,23 +120,7 @@ extern "C" void app_main(void) {
 
     vTaskDelay(pdMS_TO_TICKS(1000));
 
-    FlightState::getInstance().setState(FlightState::READY);
-
-    // Testing Redundant Storage
-    SpiffsStorage spiffsStorage;
-    SDCardStorage sdCardStorage;
-    RedundantStorageManager storageManager(&spiffsStorage, &sdCardStorage);
-
-    storageManager.begin();
-
-    if(!storageManager.appendToLog("/test.log", "Hello World Redundancy!")) {
-        ESP_LOGE("Avionics-Init", "Failed to append to log");
-    }
-
-    auto raw = storageManager.readFromFile("/test.log");
-    if (raw.empty()) {
-        ESP_LOGE("Avionics-Init", "Failed to read from file");
-    } else {
-        ESP_LOGI("Avionics-Init", "Read from file: %s", raw.c_str());
+    if (FlightState::getInstance().getState() == FlightState::INIT) {
+        FlightState::getInstance().setState(FlightState::READY);
     }
 }

@@ -7,6 +7,20 @@
 
 const char* RedundantStorageManager::TAG = "RedundantStorageManager";
 
+RedundantStorageManager& RedundantStorageManager::getInstance() {
+    static RedundantStorageManager instance;
+    return instance;
+}
+
+void RedundantStorageManager::init(Storage *primary, Storage *secondary) {
+    primaryStorage = primary;
+    secondaryStorage = secondary;
+    primaryReady = false;
+    secondaryReady = false;
+}
+
+
+
 void RedundantStorageManager::begin() {
     ESP_LOGI(TAG, "Initializing storage...");
     primaryReady = primaryStorage->begin();

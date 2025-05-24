@@ -15,6 +15,7 @@ idf_component_register(
             "commands/CommandTasks.cpp"
             "commands/CommandState.cpp"
             "commands/CommandEmatch.cpp"
+            "commands/CommandRs.cpp"
 
             "coms/Communication.cpp"
             "coms/PacketAssembler.cpp"
