@@ -14,6 +14,7 @@ idf_component_register(
             "commands/UartProcess.cpp"
             "commands/CommandTasks.cpp"
             "commands/CommandState.cpp"
+            "commands/CommandEmatch.cpp"
 
             "coms/Communication.cpp"
             "coms/PacketAssembler.cpp"

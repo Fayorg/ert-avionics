@@ -13,6 +13,7 @@
 #include "FlightState.h"
 #include "PacketAssembler.h"
 #include "PacketToJson.h"
+#include "driver/gpio.h"
 
 const char* Communication::TAG = "Communication";
 
@@ -131,6 +132,12 @@ void Communication::on_packet_received(const esp_now_recv_info_t *info, const ui
                         Communication::getInstance().send_packet(PacketAssembler::create_ack_packet(ACK_STATUS_FAILURE, command_packet.header.sequence_num), sizeof(esp_now_ack_payload_t));
                     }
                     break;
+                }
+
+                case CMD_EMA: {
+                    gpio_set_level(GPIO_NUM_4, 1);
+                    vTaskDelay(pdMS_TO_TICKS(5000));
+                    gpio_set_level(GPIO_NUM_4, 0);
                 }
                 default:
                     ESP_LOGW(TAG, "Unknown command ID");

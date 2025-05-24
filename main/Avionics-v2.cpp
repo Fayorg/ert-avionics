@@ -18,12 +18,15 @@
 #include <tasks/TelemetryTask.h>
 
 #include "ApogeeTask.h"
+#include "CommandEmatch.h"
 #include "CommandState.h"
 #include "CommandTasks.h"
 #include "DetectTakeoffTask.h"
 #include "UnreefedTask.h"
 
 extern "C" void app_main(void) {
+    gpio_set_direction(GPIO_NUM_4, GPIO_MODE_OUTPUT);
+
     // NVS & Flight State Initialization
     if (NVSStore::initNVSFlash() != ESP_OK) {
         ESP_LOGE("Avionics-Init", "Failed to initialize NVS flash. Aborting.");
@@ -95,6 +98,8 @@ extern "C" void app_main(void) {
     CommandRegistry::getInstance().registerCommand(std::make_shared<CommandPing>());
     CommandRegistry::getInstance().registerCommand(std::make_shared<CommandTasks>());
     CommandRegistry::getInstance().registerCommand(std::make_shared<CommandState>());
+
+    CommandRegistry::getInstance().registerCommand(std::make_shared<CommandEmatch>());
 
     ESP_LOGI("Avionics-Init", "Creating UART command task");
     auto status = xTaskCreate(UartProcess::wait_for_uart_command, "uart_cmd_task", 4096, NULL, 5, NULL);
