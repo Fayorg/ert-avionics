@@ -6,6 +6,9 @@
 #include "MPU6050.h"
 #include <cstdio>
 #include <Tools.h>
+#include <esp_timer.h>
+
+#include "config/PinConfiguration.h"
 
 extern "C" {
     #include <esp_log.h>
@@ -16,24 +19,14 @@ extern "C" {
 
 static const char *TAG = "MPU6500)";
 
+MPU6050 &MPU6050::getInstance() {
+    static MPU6050 instance;
+    return instance;
+}
+
 
 void MPU6050::testing() {
     ESP_LOGI("MPU6050", "Testing MPU6050");
-}
-
-MPU6050::MPU6050() {
-    dev = {};
-    accel.x = 0; accel.y = 0; accel.z = 0;
-    rotation.x = 0; rotation.y = 0; rotation.z = 0;
-    bias_accel.x = 0; bias_accel.y = 0; bias_accel.z = 0;
-    bias_rotation.x = 0; bias_rotation.y = 0; bias_rotation.z = 0;
-}
-MPU6050::~MPU6050() {
-    // destructor doesn't need to do much
-    esp_err_t err = mpu6050_free_desc(&dev);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to free descriptor: %d", err);
-    }
 }
 
 bool MPU6050::init() {
@@ -76,6 +69,8 @@ MPU6050_GYRO_RANGE_500,      //!< ± 500 °/s
     return true;
 }
 bool MPU6050::read() {
+    if (esp_timer_get_time() - last_read <= 1000 * 1000 / SAMPLE_FREQ) return true;
+    last_read = esp_timer_get_time();
     if(mpu6050_get_motion(&dev, &accel, &rotation) == ESP_OK) {
         //adjust for bias
         accel.x -= bias_accel.x; accel.y -= bias_accel.y; accel.z -= bias_accel.z;

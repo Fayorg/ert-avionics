@@ -4,7 +4,7 @@
 #ifndef DETECTTAKEOFFTASK_H
 #define DETECTTAKEOFFTASK_H
 
-#include <tasks/Task.h>
+#include "Task.h"
 
 #include "BMP280.h"
 #include "HMC5883L.h"
@@ -19,8 +19,6 @@ class DetectTakeoffTask : public Task {
         std::vector<FlightState::State> shouldRunDuring() override;
 
     private:
-        BMP280 bmp;
-        MPU6050 mpu;
         HMC5883L hmc;
 };
 

@@ -3,24 +3,13 @@
 
 #include "DetectTakeoffTask.h"
 
-#include <sys/types.h>
-
 #include "esp_log.h"
 #include "Tools.h"
 
-void DetectTakeoffTask::init() {
-    ESP_LOGI("DetectTakeoffTask", "Initializing TelemetryTask");
-    bmp.init();
-    mpu.init();
-
-    ESP_LOGI("DetectTakeoffTask", "Calibration started");
-    bmp.calibrate();
-    mpu.calibrate();
-    ESP_LOGI("DetectTakeoffTask", "Calibration finished");
-}
+void DetectTakeoffTask::init() {}
 
 UBaseType_t DetectTakeoffTask::get_priority() const {
-    return 5;
+    return 2;
 }
 
 std::string DetectTakeoffTask::getName() const {
@@ -31,11 +20,7 @@ void DetectTakeoffTask::run(void *args) {
     // std::vector<uint8_t> altitude_history;
 
     while (true) {
-        ESP_LOGI("DetectTakeoffTask", "Running DetectTakeoffTask");
-        if (!bmp.read()) {
-            ESP_LOGE("DetectTakeoffTask", "Failed to read BMP280");
-        }
-        if (!mpu.read()) {
+        if (!MPU6050::getInstance().read()) {
             ESP_LOGE("DetectTakeoffTask", "Failed to read MPU6050");
         }
 
@@ -45,7 +30,7 @@ void DetectTakeoffTask::run(void *args) {
             altitude_history.erase(altitude_history.begin());
         }*/
 
-        float ax = mpu.get_accel_x(), ay = mpu.get_accel_y(), az = mpu.get_accel_z();
+        float ax = MPU6050::getInstance().get_accel_x(), ay = MPU6050::getInstance().get_accel_y(), az = MPU6050::getInstance().get_accel_z();
         Tools::switchAxis(ax, ay, az);
 
         // Detecting the initial jerk
@@ -68,5 +53,5 @@ void DetectTakeoffTask::run(void *args) {
 }
 
 std::vector<FlightState::State> DetectTakeoffTask::shouldRunDuring() {
-    return {FlightState::State::READY, FlightState::State::ARMED};
+    return {FlightState::READY, FlightState::ARMED};
 }

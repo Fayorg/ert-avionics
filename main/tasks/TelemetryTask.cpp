@@ -14,13 +14,9 @@ void TelemetryTask::init() {
 
     ahrs.begin(20);
 
-    bmp.init();
-    mpu.init();
     hmc.init();
 
     ESP_LOGI("TelemetryTask", "Calibration started");
-    bmp.calibrate();
-    mpu.calibrate();
     hmc.calibrate();
     ESP_LOGI("TelemetryTask", "Calibration finished");
 }
@@ -30,22 +26,22 @@ void TelemetryTask::run(void *args) {
     while (true) {
         esp_now_telemetry_payload_t telemetry_payload;
 
-        if (!bmp.read()) {
+        if (!BMP280::getInstance().read()) {
             ESP_LOGE("TelemetryTask", "Failed to read BMP280");
         }
-        if (!mpu.read()) {
+        if (!MPU6050::getInstance().read()) {
             ESP_LOGE("TelemetryTask", "Failed to read MPU6050");
         }
         if (!hmc.read()) {
             ESP_LOGE("TelemetryTask", "Failed to read HMC5883L");
         }
 
-        telemetry_payload.pressure_hpa = bmp.get_pressure();
-        telemetry_payload.temperature_c = bmp.get_temperature();
-        telemetry_payload.altitude_m = bmp.get_altitude();
+        telemetry_payload.pressure_hpa = BMP280::getInstance().get_pressure();
+        telemetry_payload.temperature_c = BMP280::getInstance().get_temperature();
+        telemetry_payload.altitude_m = BMP280::getInstance().get_altitude();
 
-        float ax = mpu.get_accel_x(), ay = mpu.get_accel_y(), az = mpu.get_accel_z();
-        float gx = mpu.get_gyro_x(), gy = mpu.get_gyro_y(), gz = mpu.get_gyro_z();
+        float ax = MPU6050::getInstance().get_accel_x(), ay = MPU6050::getInstance().get_accel_y(), az = MPU6050::getInstance().get_accel_z();
+        float gx = MPU6050::getInstance().get_gyro_x(), gy = MPU6050::getInstance().get_gyro_y(), gz = MPU6050::getInstance().get_gyro_z();
         float mx = hmc.get_mag_x(), my = hmc.get_mag_y(), mz = hmc.get_mag_z();
 
         // TODO: Switch axis if needed
@@ -86,7 +82,9 @@ std::vector<FlightState::State> TelemetryTask::shouldRunDuring() {
     return {FlightState::ARMED,
             FlightState::IN_FLIGHT,
             FlightState::GLIDING,
-            FlightState::LANDED};
+            FlightState::LANDED,
+            FlightState::UNREEFED
+    };
 }
 
 

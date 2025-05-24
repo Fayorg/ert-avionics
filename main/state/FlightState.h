@@ -15,7 +15,8 @@ class FlightState {
             ARMED = 2,
             IN_FLIGHT = 3,
             GLIDING = 4,
-            LANDED = 5
+            UNREEFED = 5,
+            LANDED = 6
         };
         static FlightState& getInstance();
 

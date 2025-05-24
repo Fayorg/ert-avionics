@@ -20,12 +20,11 @@ idf_component_register(
             "coms/PacketToJson.cpp"
 
             "tasks/TaskRegistry.cpp"
-            "tasks/TestTask.cpp"
             "tasks/HeartbeatTask.cpp"
             "tasks/TelemetryTask.cpp"
-            "tasks/ForwardUartTask.cpp"
             "tasks/DetectTakeoffTask.cpp"
-            "tasks/DetectApogeeTask.cpp"
+            "tasks/ApogeeTask.cpp"
+            "tasks/UnreefedTask.cpp"
 
             "sensors/Sensor.cpp"
             "sensors/MPU6050.cpp"

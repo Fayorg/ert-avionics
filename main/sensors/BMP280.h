@@ -17,9 +17,10 @@ class BMP280 : public Sensor {
 public:
     //For all the overriden functions, check the SuperClass
     //Sensor. -> go to Sensor.h
-    BMP280();
-    ~BMP280() override;
+    static BMP280& getInstance();
+
     bool init() override;
+
     bool read() override;
     void display() override; // purely for testing to the serial monitor
     void calibrate() override; // calulates the initial data for the first 100 readings
@@ -40,9 +41,13 @@ public:
     bool get_max_altitude_reached() const {return max_altitude_reached;}
 
 private:
-    bmp280_t dev; // the bmp280 parameters i2c params
-    float temperature; //BMP280 has two readings, pressure and temp, BME280 has humidity on top of that
-    float pressure;
+    BMP280() = default;
+    BMP280(const BMP280&) = delete;
+    BMP280& operator=(const BMP280&) = delete;
+
+    bmp280_t dev = {}; // the bmp280 parameters i2c params
+    float temperature = .0; //BMP280 has two readings, pressure and temp, BME280 has humidity on top of that
+    float pressure = .0;
     float altitude;
 
     float previous_temperature = 0.0f;
@@ -58,6 +63,9 @@ private:
 
     bool deploy_main_para_parachute = false;
     bool deployed = false;
+
+
+    int64_t last_read = 0;
 };
 
 

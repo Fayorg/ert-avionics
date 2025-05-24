@@ -20,8 +20,6 @@ class TelemetryTask : public Task {
 
     private:
         MadgwickAHRS ahrs;
-        BMP280 bmp;
-        MPU6050 mpu;
         HMC5883L hmc;
 };
 

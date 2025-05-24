@@ -16,8 +16,8 @@ extern "C" {
 
 class MPU6050 : public Sensor {
 public:
-    MPU6050();
-    ~MPU6050() override;
+    static MPU6050& getInstance();
+
     bool init() override; //tries to init at most 10 times
     bool read() override;
     void display() override;
@@ -45,12 +45,18 @@ public:
 
     static void testing();
 private:
-    mpu6050_dev_t dev;
-    mpu6050_acceleration_t accel;
-    mpu6050_rotation_t rotation;
+    MPU6050() = default;
+    MPU6050(const MPU6050&) = delete;
+    MPU6050& operator=(const MPU6050&) = delete;
 
-    mpu6050_acceleration_t bias_accel;
-    mpu6050_rotation_t bias_rotation;
+    mpu6050_dev_t dev = {};
+    mpu6050_acceleration_t accel = {0, 0, 0};
+    mpu6050_rotation_t rotation = {0, 0, 0};
+
+    mpu6050_acceleration_t bias_accel = {0, 0, 0};
+    mpu6050_rotation_t bias_rotation = {0, 0, 0};
+
+    int64_t last_read = 0;
 };
 
 

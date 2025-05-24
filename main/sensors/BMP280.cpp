@@ -8,9 +8,8 @@
 #include <cstring>
 #include <esp_log.h>
 #include <string>
-#include <cmath>
-#include <Tools.h>
 #include <config/PinConfiguration.h>
+#include <esp_timer.h>
 
 #define I2C_MASTER_SDA GPIO_NUM_21
 #define I2C_MASTER_SCL GPIO_NUM_22
@@ -29,20 +28,9 @@ void BMP280::testing() {
 
 static const char *TAG = "BMP280";
 
-BMP280::BMP280()
-{
-    dev = {};  // zero-initialize all fields (C++)
-    temperature = 0.0;
-    pressure = 0.0;
-}
-
-BMP280::~BMP280() // chatGPT behaviour
-{
-    // destructor doesn't need to do much
-    esp_err_t err = bmp280_free_desc(&dev);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to free descriptor: %d", err);
-    }
+BMP280 &BMP280::getInstance() {
+    static BMP280 instance;
+    return instance;
 }
 
 bool BMP280::init() // a rework of UncleRus' example
@@ -70,6 +58,9 @@ bool BMP280::init() // a rework of UncleRus' example
 
 bool BMP280::read() // a rework of UncleRus' example
 {
+    if (esp_timer_get_time() - last_read <= 1000 * 1000 / SAMPLE_FREQ) return true;
+    last_read = esp_timer_get_time();
+
     if (bmp280_read_float(&dev, &temperature, &pressure, NULL) != ESP_OK) {
         ESP_LOGE(TAG, "BMP280 reading failed");
         //temperature = 0; pressure = 0; //since I will display the results regarding of if the readings failed, set to 0 to see the fail.

@@ -17,10 +17,11 @@
 #include "HeartbeatTask.h"
 #include <tasks/TelemetryTask.h>
 
+#include "ApogeeTask.h"
 #include "CommandState.h"
 #include "CommandTasks.h"
 #include "DetectTakeoffTask.h"
-#include "TestTask.h"
+#include "UnreefedTask.h"
 
 extern "C" void app_main(void) {
     // NVS & Flight State Initialization
@@ -66,13 +67,24 @@ extern "C" void app_main(void) {
     }
     ESP_LOGI("Avionics-Init", "Communication initialized successfully.");
 
+    // Init Sensors
+    #ifndef IS_GROUND_STATION
+        BMP280::getInstance().init();
+        MPU6050::getInstance().init();
+
+        BMP280::getInstance().calibrate();
+        MPU6050::getInstance().calibrate();
+    #endif
+
     // Init TaskRegistry
     ESP_LOGI("Avionics-Init", "Initializing task registry...");
     // TaskRegistry::getInstance().registerTask(std::make_shared<TestTask>());
     #ifndef IS_GROUND_STATION
         TaskRegistry::getInstance().registerTask(std::make_shared<HeartbeatTask>());
-        TaskRegistry::getInstance().registerTask(std::make_shared<TelemetryTask>());
         TaskRegistry::getInstance().registerTask(std::make_shared<DetectTakeoffTask>());
+        TaskRegistry::getInstance().registerTask(std::make_shared<TelemetryTask>());
+        TaskRegistry::getInstance().registerTask(std::make_shared<ApogeeTask>());
+        TaskRegistry::getInstance().registerTask(std::make_shared<UnreefedTask>());
     #endif
     TaskRegistry::getInstance().initTasks();
 

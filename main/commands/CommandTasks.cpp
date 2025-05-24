@@ -12,7 +12,7 @@ void CommandTasks::execute(const std::vector<std::string> &args) {
     auto running = TaskRegistry::getInstance().getRunningTasks();
     for (auto task : TaskRegistry::getInstance().getTasks()) {
         printf("%s", task->getName().c_str());
-        if (running.contains(task)) {
+        if (running.contains(task->getName())) {
             printf(" (running)\n");
         } else {
             printf("\n");

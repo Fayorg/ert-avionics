@@ -26,10 +26,11 @@ void TaskRegistry::initTasks() {
 
         if (taskShouldRun(FlightState::getInstance().getState(), task)) {
             TaskHandle_t taskHandle;
-            if (auto status = xTaskCreate(Task::taskRunner, task->getName().c_str(), 4096, task.get(), task->get_priority(), &taskHandle); status != pdPASS) {
+            auto status = xTaskCreate(Task::taskRunner, task->getName().c_str(), 4096, task.get(), task->get_priority(), &taskHandle);
+            if (status != pdPASS) {
                 ESP_LOGE("TaskRegistry", "Failed to create task: %s", task->getName().c_str());
             } else {
-                runningTasks[task] = std::make_shared<TaskHandle_t>(taskHandle);
+                runningTasks[task->getName()] = std::make_shared<TaskHandle_t>(taskHandle);
                 ESP_LOGI("TaskRegistry", "Created task: %s", task->getName().c_str());
             }
         }
@@ -39,7 +40,7 @@ void TaskRegistry::initTasks() {
 void TaskRegistry::onStateChange(FlightState::State oldState, FlightState::State newState) {
     for (auto& task : tasks) {
         if (taskShouldRun(newState, task)) {
-            auto it = runningTasks.find(task);
+            auto it = runningTasks.find(task->getName());
             if (it == runningTasks.end()) {
                 TaskHandle_t taskHandle;
                 auto status = xTaskCreate(Task::taskRunner, task->getName().c_str(), 4096, task.get(), task->get_priority(), &taskHandle);
@@ -47,12 +48,12 @@ void TaskRegistry::onStateChange(FlightState::State oldState, FlightState::State
                 if (status != pdPASS) {
                     ESP_LOGE("TaskRegistry", "Failed to create task: %s", task->getName().c_str());
                 } else {
-                    runningTasks[task] = std::make_shared<TaskHandle_t>(taskHandle);
+                    runningTasks[task->getName()] = std::make_shared<TaskHandle_t>(taskHandle);
                     ESP_LOGI("TaskRegistry", "Created task: %s", task->getName().c_str());
                 }
             }
         } else {
-            auto it = runningTasks.find(task);
+            auto it = runningTasks.find(task->getName());
             if (it != runningTasks.end()) {
                 vTaskDelete(*it->second);
                 runningTasks.erase(it);
