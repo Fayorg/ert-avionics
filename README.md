@@ -46,7 +46,7 @@ Another React web app used to visualize telemetry data. It's also a way to prese
 
 ## Credit
 
-First of all, a huge thank you to the (EPFL Rocket Team)[https://epflrocketteam.ch/] for organizing the event and guiding us through the design, review, and building stages — and for giving us a **300 CHF** budget to work with.
+First of all, a huge thank you to the [EPFL Rocket Team](https://epflrocketteam.ch/) for organizing the event and guiding us through the design, review, and building stages — and for giving us a **300 CHF** budget to work with.
 
 Thanks also to all the team members who contributed to the rocket (structure, recovery system, and more).
 
